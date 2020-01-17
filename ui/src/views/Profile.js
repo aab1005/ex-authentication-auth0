@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "reactstrap";
 
 import Highlight from "../components/Highlight";
@@ -6,11 +6,31 @@ import Loading from "../components/Loading";
 import { useAuth0 } from "../react-auth0-spa";
 
 const Profile = () => {
-  const { loading, user } = useAuth0();
+  const [apiToken, setApiToken] = useState("");
+  const { loading, user, getTokenSilently } = useAuth0();
+  useEffect(() => {
+    fetchToken();
+    let id = setInterval(() => {
+        fetchToken();
+    }, 60000);
+    return () => clearInterval(id);
+  });
 
   if (loading || !user) {
     return <Loading />;
   }
+
+  const fetchToken = async () => {
+    try {
+      const audienceOptions = {
+        audience: 'https://daml.com/ledger-api'
+      };
+      const token = await getTokenSilently(audienceOptions);
+      setApiToken(token);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Container className="mb-5">
@@ -28,7 +48,20 @@ const Profile = () => {
         </Col>
       </Row>
       <Row>
+        <Col md>
+          <p className="lead text-muted">auth0 user info</p>
+        </Col>
+      </Row>
+      <Row>
         <Highlight>{JSON.stringify(user, null, 2)}</Highlight>
+      </Row>
+      <Row>
+        <Col md>
+          <p className="lead text-muted">ledger API authorization header</p>
+        </Col>
+      </Row>
+      <Row>
+        <Highlight>{"Bearer " + apiToken}</Highlight>
       </Row>
     </Container>
   );
