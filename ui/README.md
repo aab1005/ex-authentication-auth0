@@ -12,6 +12,7 @@ Use `yarn` or `npm` to install the project dependencies:
 
 ```bash
 # Using npm..
+npx npm-force-resolutions
 npm install
 
 # Using yarn..
